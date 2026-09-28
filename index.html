@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>맞춤형 수학 학습지 자동 생성기 - A4 1장 전용 에디션</title>
+  <style>
+    /* -------------------------------------------------------------
+       CSS 기본 설정 및 컬러 팔레트
+       ------------------------------------------------------------- */
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --primary-light: #eef2ff;
+      --accent: #059669;
+      --accent-hover: #047857;
+      --danger: #dc2626;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --bg-page: #f1f5f9;
+      --bg-card: #ffffff;
+      --border-color: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Malgun Gothic", sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.4;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* -------------------------------------------------------------
+       컨트롤 패널 (화면 상단 설정 바 - 인쇄 시 완벽 숨김)
+       ------------------------------------------------------------- */
+    .control-panel {
+      background: var(--bg-card);
+      border-bottom: 2px solid var(--border-color);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      padding: 14px 20px;
+    }
+
+    .panel-container {
+      max-width: 1140px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .panel-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .a4-badge {
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+      font-size: 0.78rem;
+      padding: 3px 9px;
+      border-radius: 9999px;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      height: 38px;
+      padding: 0 16px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      border: none;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+      box-shadow: 0 2px 4px rgba(79, 70, 229, 0.25);
+    }
+    .btn-primary:hover {
+      background-color: var(--primary-hover);
+    }
+
+    .btn-danger-outline {
+      background-color: white;
+      color: var(--danger);
+      border: 1.5px solid #fecaca;
+    }
+    .btn-danger-outline:hover {
+      background-color: #fef2f2;
+    }
+    .btn-danger-outline.active {
+      background-color: #fee2e2;
+      border-color: var(--danger);
+      font-weight: 700;
+    }
+
+    .btn-accent {
+      background-color: var(--accent);
+      color: white;
+      box-shadow: 0 2px 4px rgba(5, 150, 105, 0.25);
+    }
+    .btn-accent:hover {
+      background-color: var(--accent-hover);
+    }
+
+    .panel-controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      align-items: flex-end;
+      background: #f8fafc;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border: 1px solid #edf2f7;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .input-group label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #475569;
+    }
+
+    .input-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select {
+      height: 36px;
+      padding: 0 10px;
+      border: 1.5px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.92rem;
+      color: var(--text-main);
+      background-color: #fff;
+      transition: all 0.2s ease;
+      outline: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+
+    .pattern-input {
+      width: 200px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .count-input {
+      width: 75px;
+      text-align: center;
+      font-weight: 700;
+    }
+
+    .select-input {
+      width: 95px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .symbol-btn {
+      width: 34px;
+      height: 36px;
+      background: #f1f5f9;
+      border: 1.5px solid var(--border-color);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #334155;
+      transition: background 0.15s;
+    }
+    .symbol-btn:hover {
+      background: #e2e8f0;
+    }
+
+    .count-preset-chips {
+      display: flex;
+      gap: 4px;
+    }
+
+    .count-chip {
+      height: 36px;
+      padding: 0 8px;
+      background: #ffffff;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #475569;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .count-chip:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+      border-color: #c7d2fe;
+    }
+
+    /* 프리셋 칩 */
+    .presets-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      font-size: 0.8rem;
+    }
+    .preset-label {
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 0.78rem;
+    }
+    .preset-chip {
+      padding: 3px 9px;
+      border-radius: 9999px;
+      background: #ffffff;
+      border: 1px solid #cbd5e1;
+      color: #334155;
+      cursor: pointer;
+      font-size: 0.76rem;
+      font-weight: 600;
+      transition: all 0.15s;
+    }
+    .preset-chip:hover {
+      background: var(--primary-light);
+      color: var(--primary);
+      border-color: #818cf8;
+    }
+
+    .options-row {
+      display: flex;
+      gap: 16px;
+      font-size: 0.8rem;
+      color: #475569;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .checkbox-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 12px;
+      background: #eff6ff;
+      border-left: 4px solid #3b82f6;
+      color: #1e40af;
+      font-size: 0.82rem;
+      border-radius: 4px;
+    }
+
+    /* -------------------------------------------------------------
+       A4 용지 학습지 영역 (Single Page Exact Fit)
+       화면에서는 210mm x 297mm의 정확한 종이 규격으로 렌더링
+       ------------------------------------------------------------- */
+    .worksheet-outer {
+      padding: 24px 0 48px 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .worksheet-page {
+      background: #ffffff;
+      width: 210mm;
+      height: 297mm;
+      max-height: 297mm;
+      padding: 13mm 16mm 14mm 16mm;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden; /* A4 1장을 절대 벗어나지 않도록 강제 */
+      position: relative;
+    }
+
+    /* 고정 헤더 영역 */
+    .ws-header {
+      flex-shrink: 0;
+      border-bottom: 2.5px solid #111827;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+    }
+
+    .ws-header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      margin-bottom: 6px;
+    }
+
+    .school-info {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: #111827;
+      letter-spacing: -0.3px;
+    }
+
+    .student-info {
+      display: flex;
+      gap: 16px;
+      font-size: 1.02rem;
+      font-weight: 600;
+    }
+
+    .student-name-box {
+      display: inline-block;
+      min-width: 130px;
+      border-bottom: 1.8px solid #111827;
+      text-align: center;
+      padding: 0 4px 2px 4px;
+    }
+
+    .ws-header-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    .ws-title {
+      font-size: 1.55rem;
+      font-weight: 900;
+      letter-spacing: 3px;
+      color: #111827;
+    }
+
+    .ws-pattern-badge {
+      font-size: 0.82rem;
+      background: #f1f5f9;
+      color: #334155;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 700;
+      border: 1px solid #cbd5e1;
+    }
+
+    .ws-score-box {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #374151;
+    }
+
+    /* -------------------------------------------------------------
+       문제 배열 그리드 (1페이지 높이에 100% 꽉 채우는 Flex + Grid)
+       ------------------------------------------------------------- */
+    .problems-grid {
+      flex: 1 1 0%;
+      height: 100%;
+      min-height: 0;
+      display: grid;
+      gap: 10px 18px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    /* 문제 카드 기본 구조 */
+    .problem-card {
+      border: 1.2px solid #94a3b8;
+      border-radius: 6px;
+      padding: 6px 10px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      background-color: #fafbfc;
+      box-sizing: border-box;
+      min-height: 0; /* flex/grid 수축 허용 */
+      overflow: hidden;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .problem-top {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .problem-num {
+      font-weight: 800;
+      color: #1e293b;
+      line-height: 1.2;
+      flex-shrink: 0;
+    }
+
+    .problem-expression {
+      font-weight: 700;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 4px;
+      line-height: 1.2;
+    }
+
+    /* 분수 표기 */
+    .fraction {
+      display: inline-flex;
+      flex-direction: column;
+      vertical-align: middle;
+      text-align: center;
+      padding: 0 2px;
+      font-size: 0.9em;
+    }
+
+    .fraction .numerator {
+      border-bottom: 1.8px solid #0f172a;
+      padding-bottom: 1px;
+      line-height: 1;
+    }
+
+    .fraction .denominator {
+      padding-top: 1px;
+      line-height: 1;
+    }
+
+    /* 풀이 여백 */
+    .workspace-space {
+      flex: 1 1 0%;
+      min-height: 4px;
+    }
+
+    /* 답안 영역 */
+    .problem-bottom {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      gap: 6px;
+      border-top: 1px dashed #cbd5e1;
+      padding-top: 3px;
+      font-weight: 700;
+      color: #475569;
+    }
+
+    .answer-box {
+      display: inline-block;
+      border-bottom: 1.5px solid #334155;
+      text-align: center;
+      position: relative;
+    }
+
+    .answer-text {
+      color: #dc2626;
+      font-weight: 800;
+      display: none;
+      user-select: none;
+    }
+
+    .show-answers .answer-text {
+      display: inline-block;
+    }
+
+    /* -------------------------------------------------------------
+       행(Row) 개수에 따른 동적 밀도 스케일링 클래스
+       (A4 1장에 수식이 시각적으로 가장 알맞게 들어가도록 조정)
+       ------------------------------------------------------------- */
+    /* 1. 넉넉한 모드 (행 수 <= 5) */
+    .density-spacious .problem-card {
+      padding: 10px 14px;
+    }
+    .density-spacious .problem-num {
+      font-size: 1.15rem;
+      min-width: 28px;
+    }
+    .density-spacious .problem-expression {
+      font-size: 1.35rem;
+    }
+    .density-spacious .problem-bottom {
+      font-size: 1.05rem;
+    }
+    .density-spacious .answer-box {
+      min-width: 100px;
+      height: 28px;
+    }
+    .density-spacious .answer-text {
+      font-size: 1.1rem;
+    }
+
+    /* 2. 보통 모드 (행 수 6 ~ 8) */
+    .density-normal .problem-card {
+      padding: 8px 12px;
+    }
+    .density-normal .problem-num {
+      font-size: 1.05rem;
+      min-width: 25px;
+    }
+    .density-normal .problem-expression {
+      font-size: 1.2rem;
+    }
+    .density-normal .problem-bottom {
+      font-size: 0.95rem;
+    }
+    .density-normal .answer-box {
+      min-width: 85px;
+      height: 24px;
+    }
+    .density-normal .answer-text {
+      font-size: 1rem;
+    }
+
+    /* 3. 콤팩트 모드 (행 수 9 ~ 11, 예: 2단 20문제 = 10행) */
+    .density-compact .problem-card {
+      padding: 5px 8px;
+    }
+    .density-compact .problem-num {
+      font-size: 0.95rem;
+      min-width: 22px;
+    }
+    .density-compact .problem-expression {
+      font-size: 1.08rem;
+    }
+    .density-compact .problem-bottom {
+      font-size: 0.88rem;
+      padding-top: 2px;
+    }
+    .density-compact .answer-box {
+      min-width: 75px;
+      height: 21px;
+    }
+    .density-compact .answer-text {
+      font-size: 0.92rem;
+    }
+
+    /* 4. 타이트 모드 (행 수 >= 12, 대량 문제) */
+    .density-tight .problem-card {
+      padding: 4px 6px;
+    }
+    .density-tight .problem-num {
+      font-size: 0.88rem;
+      min-width: 18px;
+    }
+    .density-tight .problem-expression {
+      font-size: 0.96rem;
+    }
+    .density-tight .problem-bottom {
+      font-size: 0.82rem;
+      padding-top: 1px;
+    }
+    .density-tight .answer-box {
+      min-width: 65px;
+      height: 18px;
+    }
+    .density-tight .answer-text {
+      font-size: 0.85rem;
+    }
+
+    /* -------------------------------------------------------------
+       인쇄 최적화 (@media print) - 절대 A4 1장 초과 금지
+       ------------------------------------------------------------- */
+    @media print {
+      @page {
+        size: A4 portrait;
+        margin: 8mm 12mm 8mm 12mm; /* A4 1장 출력 최적 여백 */
+      }
+
+      html, body {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important; /* 2페이지 생성 원천 차단 */
+        background: #ffffff !important;
+        color: #000000 !important;
+      }
+
+      .control-panel,
+      .no-print {
+        display: none !important;
+      }
+
+      .worksheet-outer {
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 100% !important;
+        height: 100% !important;
+        display: block !important;
+      }
+
+      .worksheet-page {
+        width: 100% !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        min-height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+        overflow: hidden !important;
+        page-break-after: avoid !important;
+        page-break-inside: avoid !important;
+        break-after: avoid !important;
+      }
+
+      .ws-header {
+        border-bottom: 2pt solid #000000 !important;
+        margin-bottom: 8px !important;
+        padding-bottom: 4px !important;
+      }
+
+      .problem-card {
+        border: 1pt solid #475569 !important;
+        background: #ffffff !important;
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+      }
+
+      .fraction .numerator {
+        border-bottom: 1.5pt solid #000000 !important;
+      }
+
+      .answer-box {
+        border-bottom: 1.2pt solid #000000 !important;
+      }
+
+      .show-answers .answer-text {
+        display: inline-block !important;
+        color: #dc2626 !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================================================= -->
+  <!-- 1. 컨트롤 패널 (상단 설정 영역 - 인쇄 시 숨김)             -->
+  <!-- ========================================================= -->
+  <div class="control-panel no-print">
+    <div class="panel-container">
+      
+      <!-- 상단 타이틀 및 액션 버튼 -->
+      <div class="panel-header">
+        <div class="panel-title">
+          ✏️ 맞춤형 수학 학습지 자동 생성기
+          <span class="a4-badge">📄 A4 1장 전용 인쇄 모드</span>
+        </div>
+        <div class="button-group">
+          <button type="button" class="btn btn-primary" id="generateBtn">
+            🪄 문제지 생성
+          </button>
+          <button type="button" class="btn btn-danger-outline" id="toggleAnswerBtn">
+            👁️ 정답지 보기
+          </button>
+          <button type="button" class="btn btn-accent" id="printBtn">
+            🖨️ A4 1장 인쇄하기 (PDF)
+          </button>
+        </div>
+      </div>
+
+      <!-- 컨트롤 폼 요소 -->
+      <div class="panel-controls">
+        <!-- 예시 문제 입력 -->
+        <div class="input-group">
+          <label for="patternInput">예시 문제 패턴 입력</label>
+          <div class="input-wrapper">
+            <input 
+              type="text" 
+              id="patternInput" 
+              class="pattern-input" 
+              value="12 + 34" 
+              placeholder="예: 12+34, 5.2-1.4, 3/4+1/2" 
+              autocomplete="off"
+            />
+            <button type="button" class="symbol-btn" data-insert=" × " title="곱셈 기호 삽입">×</button>
+            <button type="button" class="symbol-btn" data-insert=" ÷ " title="나눗셈 기호 삽입">÷</button>
+          </div>
+        </div>
+
+        <!-- 문제 개수 -->
+        <div class="input-group">
+          <label for="countInput">문제 개수</label>
+          <div class="input-wrapper">
+            <input type="number" id="countInput" class="count-input" value="20" min="1" max="40" />
+            <div class="count-preset-chips">
+              <button type="button" class="count-chip" data-count="12">12개</button>
+              <button type="button" class="count-chip" data-count="16">16개</button>
+              <button type="button" class="count-chip" data-count="20">20개</button>
+              <button type="button" class="count-chip" data-count="24">24개</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 열(단) 설정 -->
+        <div class="input-group">
+          <label for="colCountSelect">열(단) 수</label>
+          <select id="colCountSelect" class="select-input">
+            <option value="1">1단</option>
+            <option value="2" selected>2단</option>
+            <option value="3">3단</option>
+            <option value="4">4단</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 빠른 예시 칩 -->
+      <div class="presets-row">
+        <span class="preset-label">추천 예시:</span>
+        <button type="button" class="preset-chip" data-example="7 + 8">1자리 덧셈 (7+8)</button>
+        <button type="button" class="preset-chip" data-example="25 + 47">2자리 덧셈 (25+47)</button>
+        <button type="button" class="preset-chip" data-example="435 - 178">3자리 뺄셈 (435-178)</button>
+        <button type="button" class="preset-chip" data-example="14 × 6">곱셈 (14×6)</button>
+        <button type="button" class="preset-chip" data-example="84 ÷ 4">나눗셈 (84÷4)</button>
+        <button type="button" class="preset-chip" data-example="2.4 + 1.8">소수 덧셈 (2.4+1.8)</button>
+        <button type="button" class="preset-chip" data-example="5.3 - 2.7">소수 뺄셈 (5.3-2.7)</button>
+        <button type="button" class="preset-chip" data-example="2/5 + 1/5">분수 덧셈 (2/5+1/5)</button>
+        <button type="button" class="preset-chip" data-example="3/4 × 2/3">분수 곱셈 (3/4×2/3)</button>
+        <button type="button" class="preset-chip" data-example="15 + 8 - 6">세 수 혼합</button>
+      </div>
+
+      <!-- 세부 옵션 -->
+      <div class="options-row">
+        <label class="checkbox-label" title="초등학생을 위해 뺄셈 시 항상 큰 수 - 작은 수로 음수가 나오지 않게 합니다.">
+          <input type="checkbox" id="optNonNegative" checked />
+          <span>뺄셈 음수 방지 (A ≥ B)</span>
+        </label>
+        <label class="checkbox-label" title="자연수 나눗셈 시 몫이 딱 떨어지도록 문제를 생성합니다.">
+          <input type="checkbox" id="optCleanDivision" checked />
+          <span>자연수 나눗셈 나누어떨어지게 생성</span>
+        </label>
+      </div>
+
+      <!-- 상태 바 -->
+      <div class="status-bar" id="statusBar">
+        <span id="statusMessage">💡 A4 용지 1장에 딱 맞게 최적화되었습니다.</span>
+        <span id="fitIndicator" style="font-weight: 700; color: #047857;">A4 1장 적정</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- 2. 학습지 화면 (A4 용지 규격 - 1장 딱 맞춤)                -->
+  <!-- ========================================================= -->
+  <div class="worksheet-outer">
+    <div class="worksheet-page" id="worksheetPage">
+      
+      <!-- 학습지 고정 헤더 -->
+      <header class="ws-header">
+        <div class="ws-header-top">
+          <!-- 진영대창초등학교 4학년 1반 고정 -->
+          <div class="school-info">진영대창초등학교 4학년 1반</div>
+          <div class="student-info">
+            <span>이름: <span class="student-name-box"></span></span>
+          </div>
+        </div>
+
+        <div class="ws-header-title-row">
+          <h1 class="ws-title">수 학 학 습 지</h1>
+          <div class="ws-pattern-badge" id="worksheetPatternBadge">유형: 2자리수 + 2자리수</div>
+          <div class="ws-score-box">점수: _____ / <span id="totalCountText">20</span>점</div>
+        </div>
+      </header>
+
+      <!-- 문제 영역: A4 1장의 잔여 높이를 정확히 100% 채움 -->
+      <main class="problems-grid" id="problemsContainer">
+        <!-- 동적으로 문제 카드들이 생성됩니다 -->
+      </main>
+
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- 3. 핵심 자바스크립트 엔진 (패턴 분석, 1장 맞춤 레이아웃)   -->
+  <!-- ========================================================= -->
+  <script>
+    (function () {
+      'use strict';
+
+      // -----------------------------------------------------------
+      // DOM Elements
+      // -----------------------------------------------------------
+      const patternInput = document.getElementById('patternInput');
+      const countInput = document.getElementById('countInput');
+      const colCountSelect = document.getElementById('colCountSelect');
+      const generateBtn = document.getElementById('generateBtn');
+      const toggleAnswerBtn = document.getElementById('toggleAnswerBtn');
+      const printBtn = document.getElementById('printBtn');
+      const problemsContainer = document.getElementById('problemsContainer');
+      const worksheetPatternBadge = document.getElementById('worksheetPatternBadge');
+      const totalCountText = document.getElementById('totalCountText');
+      const statusMessage = document.getElementById('statusMessage');
+      const fitIndicator = document.getElementById('fitIndicator');
+      const optNonNegative = document.getElementById('optNonNegative');
+      const optCleanDivision = document.getElementById('optCleanDivision');
+
+      let currentProblems = [];
+      let isAnswerVisible = false;
+
+      // -----------------------------------------------------------
+      // 수학 유틸리티 함수
+      // -----------------------------------------------------------
+      function getGCD(a, b) {
+        a = Math.abs(a);
+        b = Math.abs(b);
+        while (b) {
+          const t = b;
+          b = a % b;
+          a = t;
+        }
+        return a;
+      }
+
+      function getRandomIntByDigits(digits) {
+        if (digits <= 1) {
+          return Math.floor(Math.random() * 9) + 1;
+        }
+        const min = Math.pow(10, digits - 1);
+        const max = Math.pow(10, digits) - 1;
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      function getRandomIntBetween(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      function roundAccurately(value, decimals = 4) {
+        return Number(Math.round(Number(value + 'e' + decimals)) + 'e-' + decimals);
+      }
+
+      // -----------------------------------------------------------
+      // 패턴 파서 (Pattern Parser)
+      // -----------------------------------------------------------
+      function parsePattern(rawInput) {
+        if (!rawInput || !rawInput.trim()) {
+          throw new Error('예시 문제를 입력해 주세요.');
+        }
+
+        let str = rawInput.trim();
+        str = str.replace(/×/g, '*').replace(/÷/g, '/');
+        str = str.replace(/\s+/g, ' ');
+
+        const hasOtherOp = /[+\-*]/.test(str);
+        
+        let tokenRegex;
+        if (hasOtherOp) {
+          tokenRegex = /(\d+\s*\/\s*\d+)|([+\-*])|(\d+(?:\.\d+)?)/g;
+        } else {
+          tokenRegex = /([+\-*\/])|(\d+(?:\.\d+)?)/g;
+        }
+
+        const tokens = [];
+        let match;
+        while ((match = tokenRegex.exec(str)) !== null) {
+          const val = match[0].trim();
+          if (!val) continue;
+
+          if (val === '+' || val === '-' || val === '*' || val === '/') {
+            tokens.push({
+              type: 'operator',
+              val: val === '*' ? '×' : (val === '/' ? '÷' : val)
+            });
+          } else if (val.includes('/')) {
+            const parts = val.split('/').map(s => s.trim());
+            const numStr = parts[0];
+            const denStr = parts[1];
+            tokens.push({
+              type: 'fraction',
+              raw: val,
+              numDigits: numStr.length,
+              denDigits: denStr.length,
+              isProper: parseInt(numStr, 10) < parseInt(denStr, 10)
+            });
+          } else if (val.includes('.')) {
+            const parts = val.split('.');
+            tokens.push({
+              type: 'decimal',
+              raw: val,
+              intDigits: Math.max(1, parts[0].length),
+              decDigits: parts[1].length
+            });
+          } else {
+            tokens.push({
+              type: 'integer',
+              raw: val,
+              digits: val.length
+            });
+          }
+        }
+
+        const operands = tokens.filter(t => t.type !== 'operator');
+        const operators = tokens.filter(t => t.type === 'operator');
+
+        if (operands.length < 2 || operators.length < 1) {
+          throw new Error('올바른 수식 형태(예: 12+34, 5.2-1.4, 3/4+1/2)로 입력해 주세요.');
+        }
+
+        return {
+          tokens,
+          operands,
+          operators,
+          summary: generatePatternSummary(tokens)
+        };
+      }
+
+      function generatePatternSummary(tokens) {
+        return tokens.map(t => {
+          if (t.type === 'operator') return ` ${t.val} `;
+          if (t.type === 'integer') return `${t.digits}자리수`;
+          if (t.type === 'decimal') return `소수(${t.decDigits}자리)`;
+          if (t.type === 'fraction') return `분수`;
+          return '';
+        }).join('');
+      }
+
+      // -----------------------------------------------------------
+      // 문제 생성기 (Problem Generator)
+      // -----------------------------------------------------------
+      function generateProblem(patternInfo, problemIndex) {
+        const preventNegative = optNonNegative.checked;
+        const cleanDivision = optCleanDivision.checked;
+
+        let attempts = 0;
+        const maxAttempts = 50;
+
+        while (attempts < maxAttempts) {
+          attempts++;
+
+          const generatedOperands = patternInfo.operands.map(p => {
+            if (p.type === 'integer') {
+              return {
+                type: 'integer',
+                val: getRandomIntByDigits(p.digits)
+              };
+            } else if (p.type === 'decimal') {
+              const intVal = getRandomIntByDigits(p.intDigits);
+              const decVal = getRandomIntByDigits(p.decDigits);
+              const combined = parseFloat(`${intVal}.${decVal}`);
+              return {
+                type: 'decimal',
+                val: combined,
+                decDigits: p.decDigits
+              };
+            } else if (p.type === 'fraction') {
+              let den = getRandomIntByDigits(p.denDigits);
+              if (den <= 1) den = getRandomIntBetween(2, 9);
+              let num;
+              if (p.isProper) {
+                num = getRandomIntBetween(1, Math.max(1, den - 1));
+              } else {
+                num = getRandomIntBetween(den, den * 3);
+              }
+              return { type: 'fraction', num, den };
+            }
+            return { type: 'integer', val: 1 };
+          });
+
+          // 특수 연산 조건 보정
+          if (patternInfo.tokens.length === 3 && patternInfo.operators.length === 1) {
+            const op = patternInfo.operators[0].val;
+            let op1 = generatedOperands[0];
+            let op2 = generatedOperands[1];
+
+            // 뺄셈 음수 방지 (A >= B)
+            if (op === '-' && preventNegative) {
+              if (op1.type === 'integer' && op2.type === 'integer') {
+                if (op1.val < op2.val) {
+                  const tmp = op1.val; op1.val = op2.val; op2.val = tmp;
+                }
+              } else if (op1.type === 'decimal' && op2.type === 'decimal') {
+                if (op1.val < op2.val) {
+                  const tmp = op1.val; op1.val = op2.val; op2.val = tmp;
+                }
+              } else if (op1.type === 'fraction' && op2.type === 'fraction') {
+                if (op1.num / op1.den < op2.num / op2.den) {
+                  const tmpNum = op1.num, tmpDen = op1.den;
+                  op1.num = op2.num; op1.den = op2.den;
+                  op2.num = tmpNum; op2.den = tmpDen;
+                }
+              }
+            }
+
+            // 자연수 나눗셈 나누어떨어짐
+            if (op === '÷' && cleanDivision) {
+              if (op1.type === 'integer' && op2.type === 'integer') {
+                const divisor = Math.max(2, op2.val);
+                const targetDigitsQ = Math.max(1, patternInfo.operands[0].digits - patternInfo.operands[1].digits + 1);
+                const quotient = getRandomIntByDigits(targetDigitsQ);
+                op1.val = divisor * quotient;
+                op2.val = divisor;
+              }
+            }
+          }
+
+          try {
+            const calculated = evaluateExpression(patternInfo.tokens, generatedOperands);
+            return {
+              index: problemIndex,
+              tokens: patternInfo.tokens,
+              operands: generatedOperands,
+              htmlExpression: renderExpressionHTML(patternInfo.tokens, generatedOperands),
+              answerText: calculated.text
+            };
+          } catch (e) {
+            continue;
+          }
+        }
+
+        return {
+          index: problemIndex,
+          tokens: patternInfo.tokens,
+          operands: generatedOperands,
+          htmlExpression: `${problemIndex + 1}번`,
+          answerText: '오류'
+        };
+      }
+
+      function evaluateExpression(tokenPattern, operands) {
+        const hasFraction = operands.some(o => o.type === 'fraction');
+
+        if (hasFraction) {
+          if (operands.length === 2 && tokenPattern.some(t => t.type === 'operator')) {
+            const op = tokenPattern.find(t => t.type === 'operator').val;
+            const f1 = toFractionObj(operands[0]);
+            const f2 = toFractionObj(operands[1]);
+
+            let resNum, resDen;
+            if (op === '+') {
+              resNum = f1.num * f2.den + f2.num * f1.den;
+              resDen = f1.den * f2.den;
+            } else if (op === '-') {
+              resNum = f1.num * f2.den - f2.num * f1.den;
+              resDen = f1.den * f2.den;
+            } else if (op === '×') {
+              resNum = f1.num * f2.num;
+              resDen = f1.den * f2.den;
+            } else if (op === '÷') {
+              resNum = f1.num * f2.den;
+              resDen = f1.den * f2.num;
+            }
+
+            if (resDen === 0) throw new Error('Divide by zero');
+
+            const gcd = getGCD(resNum, resDen);
+            let simpNum = resNum / gcd;
+            let simpDen = resDen / gcd;
+
+            if (simpDen < 0) {
+              simpNum = -simpNum;
+              simpDen = -simpDen;
+            }
+
+            if (simpDen === 1) {
+              return { text: `${simpNum}` };
+            }
+
+            if (Math.abs(simpNum) > simpDen) {
+              const whole = Math.floor(Math.abs(simpNum) / simpDen) * (simpNum < 0 ? -1 : 1);
+              const rem = Math.abs(simpNum) % simpDen;
+              return { text: `${simpNum}/${simpDen} (${whole > 0 ? whole : ''}과 ${rem}/${simpDen})` };
+            }
+
+            return { text: `${simpNum}/${simpDen}` };
+          }
+        }
+
+        let opIdx = 0;
+        let exprStr = '';
+        for (const token of tokenPattern) {
+          if (token.type === 'operator') {
+            const opSymbol = token.val === '×' ? '*' : (token.val === '÷' ? '/' : token.val);
+            exprStr += ` ${opSymbol} `;
+          } else {
+            const curOp = operands[opIdx++];
+            exprStr += curOp.val;
+          }
+        }
+
+        const calcVal = Function(`'use strict'; return (${exprStr})`)();
+        const cleanVal = roundAccurately(calcVal, 4);
+        return { text: `${cleanVal}` };
+      }
+
+      function toFractionObj(op) {
+        if (op.type === 'fraction') return { num: op.num, den: op.den };
+        if (op.type === 'integer') return { num: op.val, den: 1 };
+        return { num: Math.round(op.val * 10), den: 10 };
+      }
+
+      function renderExpressionHTML(tokenPattern, operands) {
+        let opIdx = 0;
+        const parts = [];
+
+        for (const token of tokenPattern) {
+          if (token.type === 'operator') {
+            parts.push(`<span class="op">${token.val}</span>`);
+          } else {
+            const curOp = operands[opIdx++];
+            if (curOp.type === 'fraction') {
+              parts.push(`
+                <span class="fraction">
+                  <span class="numerator">${curOp.num}</span>
+                  <span class="denominator">${curOp.den}</span>
+                </span>
+              `);
+            } else {
+              parts.push(`<span>${curOp.val}</span>`);
+            }
+          }
+        }
+
+        parts.push(`<span class="op">=</span>`);
+        return parts.join(' ');
+      }
+
+      // -----------------------------------------------------------
+      // 핵심: A4 1장 완벽 맞춤 렌더링 로직 (Auto-Fit Single Page)
+      // -----------------------------------------------------------
+      function generateWorksheet() {
+        const rawPattern = patternInput.value.trim();
+        const count = Math.max(1, parseInt(countInput.value, 10) || 20);
+        const colCount = parseInt(colCountSelect.value, 10) || 2;
+
+        try {
+          const patternInfo = parsePattern(rawPattern);
+          const rows = Math.ceil(count / colCount);
+
+          // 상태 메시지 및 적정성 평가
+          worksheetPatternBadge.textContent = `유형: ${patternInfo.summary}`;
+          totalCountText.textContent = count;
+
+          if (rows > 11) {
+            statusMessage.innerHTML = `⚠️ 문제가 많아 약간 조밀하게 배치되었습니다. (${colCount}단 ${count}문제 = ${rows}행)`;
+            fitIndicator.innerHTML = '⚠️ 글자 다소 작음';
+            fitIndicator.style.color = '#d97706';
+          } else {
+            statusMessage.innerHTML = `✅ [${patternInfo.summary}] <strong>A4 1장에 완벽하게 맞춤</strong> 생성되었습니다. (${colCount}단 ${count}문제 = ${rows}행)`;
+            fitIndicator.innerHTML = '📄 A4 1장 최적';
+            fitIndicator.style.color = '#047857';
+          }
+
+          // 문제 생성
+          currentProblems = [];
+          for (let i = 0; i < count; i++) {
+            currentProblems.push(generateProblem(patternInfo, i));
+          }
+
+          // A4 1장 채우기 핵심:
+          // CSS Grid의 grid-template-rows를 repeat(rows, 1fr)로 동적 지정하여
+          // 남은 전체 높이 100%를 rows개로 균등하게 분배!
+          problemsContainer.style.gridTemplateColumns = `repeat(${colCount}, minmax(0, 1fr))`;
+          problemsContainer.style.gridTemplateRows = `repeat(${rows}, minmax(0, 1fr))`;
+
+          // 밀도 클래스 부여 (행 수에 따른 패딩 및 폰트 크기 자동 조절)
+          problemsContainer.classList.remove('density-spacious', 'density-normal', 'density-compact', 'density-tight');
+          if (rows <= 5) {
+            problemsContainer.classList.add('density-spacious');
+          } else if (rows <= 8) {
+            problemsContainer.classList.add('density-normal');
+          } else if (rows <= 11) {
+            problemsContainer.classList.add('density-compact');
+          } else {
+            problemsContainer.classList.add('density-tight');
+          }
+
+          // 문제 카드 HTML 생성
+          const cardsHtml = currentProblems.map(p => `
+            <div class="problem-card">
+              <div class="problem-top">
+                <span class="problem-num">${p.index + 1}.</span>
+                <div class="problem-expression">${p.htmlExpression}</div>
+              </div>
+              <div class="workspace-space"></div>
+              <div class="problem-bottom">
+                <span>답:</span>
+                <div class="answer-box">
+                  <span class="answer-text">${p.answerText}</span>
+                </div>
+              </div>
+            </div>
+          `).join('');
+
+          problemsContainer.innerHTML = cardsHtml;
+          updateAnswerVisibility();
+
+        } catch (err) {
+          statusMessage.innerHTML = `⚠️ <strong style="color: #dc2626;">입력 오류:</strong> ${err.message}`;
+          alert(err.message);
+        }
+      }
+
+      function updateAnswerVisibility() {
+        if (isAnswerVisible) {
+          problemsContainer.classList.add('show-answers');
+          toggleAnswerBtn.classList.add('active');
+          toggleAnswerBtn.innerHTML = '🙈 정답지 숨기기';
+        } else {
+          problemsContainer.classList.remove('show-answers');
+          toggleAnswerBtn.classList.remove('active');
+          toggleAnswerBtn.innerHTML = '👁️ 정답지 보기';
+        }
+      }
+
+      // -----------------------------------------------------------
+      // 이벤트 리스너 등록
+      // -----------------------------------------------------------
+      generateBtn.addEventListener('click', generateWorksheet);
+
+      patternInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') generateWorksheet();
+      });
+
+      countInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') generateWorksheet();
+      });
+
+      // 단 수 변경 시 추천 기본 문제 수 동기화 및 즉시 재생성
+      colCountSelect.addEventListener('change', () => {
+        const col = parseInt(colCountSelect.value, 10);
+        // 단 수에 따른 A4 1장 가장 예쁜 추천 개수
+        if (col === 1 && parseInt(countInput.value, 10) > 12) countInput.value = 8;
+        if (col === 2 && (parseInt(countInput.value, 10) < 12 || parseInt(countInput.value, 10) > 22)) countInput.value = 16;
+        if (col === 3 && parseInt(countInput.value, 10) < 18) countInput.value = 21;
+        if (col === 4 && parseInt(countInput.value, 10) < 20) countInput.value = 24;
+        generateWorksheet();
+      });
+
+      // 개수 퀵 칩 클릭
+      document.querySelectorAll('.count-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          countInput.value = btn.getAttribute('data-count');
+          generateWorksheet();
+        });
+      });
+
+      toggleAnswerBtn.addEventListener('click', () => {
+        isAnswerVisible = !isAnswerVisible;
+        updateAnswerVisibility();
+      });
+
+      printBtn.addEventListener('click', () => {
+        window.print();
+      });
+
+      // 특수기호 삽입
+      document.querySelectorAll('.symbol-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const insertText = btn.getAttribute('data-insert');
+          const input = patternInput;
+          const start = input.selectionStart;
+          const end = input.selectionEnd;
+          const val = input.value;
+          input.value = val.substring(0, start) + insertText + val.substring(end);
+          input.focus();
+          input.setSelectionRange(start + insertText.length, start + insertText.length);
+        });
+      });
+
+      // 추천 예시 칩 클릭
+      document.querySelectorAll('.preset-chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+          patternInput.value = chip.getAttribute('data-example');
+          generateWorksheet();
+        });
+      });
+
+      // 초기 실행 (2단 20문제 A4 1장 맞춤 생성)
+      generateWorksheet();
+
+    })();
+  </script>
+</body>
+</html>
